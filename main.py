@@ -16,7 +16,6 @@ noise_commands = ["Клюшка", "Голос", "Макароны", "Лампо�
 
 # Авторизация
 gauth = GoogleAuth()
-# gauth.LoadCredentialsFile("./client_secrets.json")  # Путь к файлу с учетными данными, если они уже существуют
 if gauth.credentials is None:
     # Аутентификация через credentials.json
     gauth.LocalWebserverAuth()
@@ -107,7 +106,7 @@ async def without_puree(message: types.Message):
 
 @dp.message_handler(lambda message: message.text in main_commands or message.text in noise_commands)
 async def without_puree(message: types.Message):
-    await message.reply(f"Теперь в голосовом сообщение скажите: {message.text}")
+    await message.reply(f"Теперь выберите слово выше, нажав ответить/reply и скажите в голосовом сообщении: {message.text}")
 
 
 @dp.message_handler(content_types=['voice'])
@@ -188,8 +187,8 @@ async def voice_message(message: types.Message):
 
 @dp.callback_query_handler()
 async def callback(call):
+    print(call.data)
     await call.message.answer(call.data)
-
 
 if __name__ == "__main__":
     try:
