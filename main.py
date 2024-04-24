@@ -2,36 +2,39 @@
 from aiogram import Bot, Dispatcher, executor, types
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-import api_token
 import uuid
 import os
 
 
-bot = Bot(api_token.API_KEY)
+API_KEY = "..." # your telefram bot api_key
+
+
+bot = Bot(API_KEY)
 dp = Dispatcher(bot)
 
 main_commands = ["Быстрее", "Медленнее", "Налево", "Направо", "Вперед", "Назад", "Бегом", "Стоп", "Привет", "Ура"]
 noise_commands = ["Клюшка", "Голос", "Макароны", "Лампочка", "Закат", "Рука", "Величие", "Носок", "Бред", "Фонарь"]
 
 
-# Авторизация
-gauth = GoogleAuth()
-if gauth.credentials is None:
-    # Аутентификация через credentials.json
-    gauth.LocalWebserverAuth()
-elif gauth.access_token_expired:
-    # Обновление токена, если он устарел
-    gauth.Refresh()
-else:
-    # Авторизация с сохранением токена
-    gauth.Authorize()
-# Создание объекта GoogleDrive
-drive = GoogleDrive(gauth)
+# # Авторизация
+# gauth = GoogleAuth()
+# if gauth.credentials is None:
+#     # Аутентификация через credentials.json
+#     gauth.LocalWebserverAuth()
+# elif gauth.access_token_expired:
+#     # Обновление токена, если он устарел
+#     gauth.Refresh()
+# else:
+#     # Авторизация с сохранением токена
+#     gauth.Authorize()
+# # Создание объекта GoogleDrive
+# drive = GoogleDrive(gauth)
 
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
     desc = 'Привет!\nЯ бот, который нужен для сбора данных для проекта по распознованию слов.\n\n\
+Запись должна проходить в тихом месте без посторонних шумов. Микрофон следует держать на расстоянии не менее 20 см от рта\n\n\
 Сначала появится снизу клавиатура для выбора слова. Выберите слово, которое будете говорить. Затем скажите его и отправьте голосовое сообщение (1-3 секунды).\n\n\
 Приветствуется - разные интонации сказанного и выбор слова больше одного раза.'
     
@@ -120,65 +123,65 @@ async def voice_message(message: types.Message):
     
     if temp_message.text in main_commands or temp_message.text in noise_commands:
         # for local
-        # name = temp_message.text
-        # if temp_message.text in noise_commands:
-        #      dir = "./data/noise/" + name
-        # else:
-        #     dir = "./data/" + name
-        # if not os.path.exists(dir):
-        #     os.mkdir(dir)
-        
-        
-        # Название основной папки
-        main_folder_name = "data"
-        # Проверка существования основной папки
-        main_folder_list = drive.ListFile({'q': "title='" + main_folder_name + "' and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
-        if main_folder_list:
-            main_folder = main_folder_list[0]
-        else:
-            # Создание основной папки на Google Drive
-            main_folder = drive.CreateFile({'title': main_folder_name, 'mimeType': 'application/vnd.google-apps.folder'})
-            main_folder.Upload()
-        # Получение ID основной папки
-        main_folder_id = main_folder['id']
-        
-        
-        sub_folder_name = ""
+        name = temp_message.text
         if temp_message.text in noise_commands:
-            sub_folder_name = "noise"
-            # Проверка существования вложенной папки в основной папке
-            sub_folder_list = drive.ListFile({'q': "title='" + sub_folder_name + "' and '" + main_folder_id + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
-            if sub_folder_list:
-                sub_folder = sub_folder_list[0]
-            else:
-                # Создание вложенной папки в основной папке на Google Drive
-                sub_folder = drive.CreateFile({'title': sub_folder_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [{'id': main_folder_id}]})
-                sub_folder.Upload()
-            main_folder_id = sub_folder['id']
-        
-        # Название вложенной папки
-        sub_folder_name = f"{temp_message.text}"
-
-        # Проверка существования вложенной папки в основной папке
-        sub_folder_list = drive.ListFile({'q': "title='" + sub_folder_name + "' and '" + main_folder_id + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
-        if sub_folder_list:
-            sub_folder = sub_folder_list[0]
+             dir = "./data/noise/" + name
         else:
-            # Создание вложенной папки в основной папке на Google Drive
-            sub_folder = drive.CreateFile({'title': sub_folder_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [{'id': main_folder_id}]})
-            sub_folder.Upload()
+            dir = "./data/" + name
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        
+        
+        # # Название основной папки
+        # main_folder_name = "data"
+        # # Проверка существования основной папки
+        # main_folder_list = drive.ListFile({'q': "title='" + main_folder_name + "' and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
+        # if main_folder_list:
+        #     main_folder = main_folder_list[0]
+        # else:
+        #     # Создание основной папки на Google Drive
+        #     main_folder = drive.CreateFile({'title': main_folder_name, 'mimeType': 'application/vnd.google-apps.folder'})
+        #     main_folder.Upload()
+        # # Получение ID основной папки
+        # main_folder_id = main_folder['id']
+        
+        
+        # sub_folder_name = ""
+        # if temp_message.text in noise_commands:
+        #     sub_folder_name = "noise"
+        #     # Проверка существования вложенной папки в основной папке
+        #     sub_folder_list = drive.ListFile({'q': "title='" + sub_folder_name + "' and '" + main_folder_id + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
+        #     if sub_folder_list:
+        #         sub_folder = sub_folder_list[0]
+        #     else:
+        #         # Создание вложенной папки в основной папке на Google Drive
+        #         sub_folder = drive.CreateFile({'title': sub_folder_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [{'id': main_folder_id}]})
+        #         sub_folder.Upload()
+        #     main_folder_id = sub_folder['id']
+        
+        # # Название вложенной папки
+        # sub_folder_name = f"{temp_message.text}"
 
-        # Получение ID вложенной папки
-        sub_folder_id = sub_folder['id']
+        # # Проверка существования вложенной папки в основной папке
+        # sub_folder_list = drive.ListFile({'q': "title='" + sub_folder_name + "' and '" + main_folder_id + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
+        # if sub_folder_list:
+        #     sub_folder = sub_folder_list[0]
+        # else:
+        #     # Создание вложенной папки в основной папке на Google Drive
+        #     sub_folder = drive.CreateFile({'title': sub_folder_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [{'id': main_folder_id}]})
+        #     sub_folder.Upload()
+
+        # # Получение ID вложенной папки
+        # sub_folder_id = sub_folder['id']
         
         
-        file_name = f"{str(uuid.uuid4())[0:17]}.wav"
-        file = drive.CreateFile({'title': file_name, 'parents': [{'id': sub_folder_id}]})
-        file.Upload()
+        # file_name = f"{str(uuid.uuid4())[0:17]}.wav"
+        # file = drive.CreateFile({'title': file_name, 'parents': [{'id': sub_folder_id}]})
+        # file.Upload()
         
         
         # for local:
-        # await bot.download_file(file_path, f"{dir}/{str(uuid.uuid4())[0:17]}.wav")
+        await bot.download_file(file_path, f"{dir}/{str(uuid.uuid4())[0:17]}.wav")
         await bot.send_message(message.chat.id, 'Сообщение получено и сохранено успешно.')
         await bot.send_message(message.chat.id, 'Отлично!\nТеперь повторите либо с этим же словом, либо с другим (клавиатура может быть скрыта).')
     else:
@@ -189,6 +192,7 @@ async def voice_message(message: types.Message):
 async def callback(call):
     print(call.data)
     await call.message.answer(call.data)
+
 
 if __name__ == "__main__":
     try:
