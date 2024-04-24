@@ -5,3 +5,4 @@ __pycache__/*
 *.wav
 *.mp3
 client_secrets.json
+.env
